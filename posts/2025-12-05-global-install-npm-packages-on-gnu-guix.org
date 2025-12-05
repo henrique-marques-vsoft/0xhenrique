@@ -1,0 +1,45 @@
+#+title: Global Install NPM Packages on GNU Guix
+#+date: <2025-12-05 18:21>
+#+description: How to make npm install --global work on Guix
+#+filetags: web guix
+#+ATTR_HTML: :border 2 :rules all :frame border
+
+This post is not exactly a tutorial, but rather a record for myself. I've already needed to configure npm on Guix a few times and, inevitably, I ended up forgetting the steps when I installed the system again. To avoid wasting time in the future, I leave here the procedure that always solves the problem for me.
+
+When trying to install packages globally with npm, the error is usually this:
+
+#+BEGIN_SRC
+home@user ~/workspace/dump$ npm i --global @volar/typescript
+npm error code ENOENT
+npm error syscall mkdir
+npm error path /gnu/store/7wn5cq17bjndjxqpzlp6icyyyfxz36bf-node-22.14.0/lib/node_modules/@volar
+npm error errno -2
+npm error enoent ENOENT: no such file or directory, mkdir '/gnu/store/...'
+npm error enoent This is related to npm not being able to find a file.
+npm error A complete log of this run can be found in: /home/user/.npm/_logs/2025-12-05T18_11_26_115Z-debug-0.log
+#+END_SRC
+
+The problem happens because Guix, like NixOS, keeps the /gnu/store directory immutable. npm tries to write there and fails. The practical solution is to redirect global packages to a directory in $HOME.
+
+*** Step by step
+
+#+BEGIN_SRC
+# Create a directory for global packages:
+mkdir ~/.npm-global
+  
+# Configure npm prefix:
+npm config set prefix '~/.npm-global'
+  
+# Add the new path to PATH:
+export PATH="$HOME/.npm-global/bin:$PATH"
+  
+# Confirm that the configuration has been applied:
+npm config get prefix
+/home/user/.npm-global
+  
+# Install the desired package:
+npm install -g @volar/typescript
+added 5 packages in 1s
+#+END_SRC
+
+There are other ways around this limitation, but working with npm (and other package managers) in Guix can be a bit of a pain. This simple adjustment is often enough to avoid headaches in most cases.

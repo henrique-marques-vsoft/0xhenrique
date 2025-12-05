@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="description" content="How to make npm install --global work on Guix">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://blog.0xhenrique.org/rss.xml"
+      title="RSS feed for https://blog.0xhenrique.org/">
+<title>Global Install NPM Packages on GNU Guix</title>
+<meta name="author" content="Henrique Marques">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="initial-scale=1,width=device-width,minimum-scale=1">
+<link href= "static/style.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico"></head>
+<body>
+<div id="preamble" class="status"><ul class="menu-list"><li class="menu-item"><a href="https://blog.0xhenrique.org/">λ 0xhenrique</a></li><li class="menu-item"><a href="https://blog.0xhenrique.org/tag-projects">Projects</a></li><li class="menu-item"><a href="https://blog.0xhenrique.org/archive">Archive</a></li><li class="menu-item"><a href="https://blog.0xhenrique.org/rss.xml">RSS</a></li><li class="menu-item" style="float:right"><a href="https://blog.0xhenrique.org/about">About</a></li></ul></div>
+<div id="content">
+<div class="post-date">05 Dec 2025</div><h1 class="post-title"><a href="https://blog.0xhenrique.org/2025-12-05-global-install-npm-packages-on-gnu-guix.html">Global Install NPM Packages on GNU Guix</a></h1>
+<p>
+This post is not exactly a tutorial, but rather a record for myself. I've already needed to configure npm on Guix a few times and, inevitably, I ended up forgetting the steps when I installed the system again. To avoid wasting time in the future, I leave here the procedure that always solves the problem for me.
+</p>
+
+<p>
+When trying to install packages globally with npm, the error is usually this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-nil">home@user ~/workspace/dump$ npm i --global @volar/typescript
+npm error code ENOENT
+npm error syscall mkdir
+npm error path /gnu/store/7wn5cq17bjndjxqpzlp6icyyyfxz36bf-node-22.14.0/lib/node_modules/@volar
+npm error errno -2
+npm error enoent ENOENT: no such file or directory, mkdir '/gnu/store/...'
+npm error enoent This is related to npm not being able to find a file.
+npm error A complete log of this run can be found in: /home/user/.npm/_logs/2025-12-05T18_11_26_115Z-debug-0.log
+</pre>
+</div>
+
+<p>
+The problem happens because Guix, like NixOS, keeps the /gnu/store directory immutable. npm tries to write there and fails. The practical solution is to redirect global packages to a directory in $HOME.
+</p>
+<div id="outline-container-org2ca5ea0" class="outline-2">
+<h2 id="org2ca5ea0">Step by step</h2>
+<div class="outline-text-2" id="text-org2ca5ea0">
+<div class="org-src-container">
+<pre class="src src-nil"># Create a directory for global packages:
+mkdir ~/.npm-global
+
+# Configure npm prefix:
+npm config set prefix '~/.npm-global'
+
+# Add the new path to PATH:
+export PATH="$HOME/.npm-global/bin:$PATH"
+
+# Confirm that the configuration has been applied:
+npm config get prefix
+/home/user/.npm-global
+
+# Install the desired package:
+npm install -g @volar/typescript
+added 5 packages in 1s
+</pre>
+</div>
+
+<p>
+There are other ways around this limitation, but working with npm (and other package managers) in Guix can be a bit of a pain. This simple adjustment is often enough to avoid headaches in most cases.
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://blog.0xhenrique.org/tags.html">Tags</a>: <a href="https://blog.0xhenrique.org/tag-web.html">web</a> <a href="https://blog.0xhenrique.org/tag-guix.html">guix</a> </div></div>
+<div id="postamble" class="status"><a href="https://blog.0xhenrique.org/rss.xml">My RSS Feed</a>
+<center>Created using GNU Emacs + <a href="https://github.com/bastibe/org-static-blog">Org Static Blog</a>.</center></div>
+</body>
+</html>
